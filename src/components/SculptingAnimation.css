@@ -1,0 +1,188 @@
+.sculpting-animation {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sculpting-svg {
+  width: min(50vh, 400px);
+  height: min(50vh, 400px);
+  opacity: 0.6;
+}
+
+/* Line drawing animation */
+.sa-draw {
+  animation: sa-draw-in 2.5s ease-out forwards;
+}
+
+.sa-draw-delayed {
+  animation: sa-draw-in 2s ease-out 1s forwards;
+}
+
+.sa-draw-delayed2 {
+  animation: sa-draw-in 2s ease-out 2s forwards;
+}
+
+@keyframes sa-draw-in {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Hammer strike animation - repeating */
+.sa-hammer {
+  transform-origin: 270px 155px;
+  animation: sa-hammer-strike 1.6s ease-in-out 2.5s infinite;
+}
+
+@keyframes sa-hammer-strike {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  15% {
+    transform: rotate(-25deg);
+  }
+  30% {
+    transform: rotate(5deg);
+  }
+  35% {
+    transform: rotate(0deg);
+  }
+}
+
+/* Chisel group subtle movement */
+.sa-chisel-group {
+  animation: sa-chisel-vibrate 1.6s ease-in-out 2.5s infinite;
+}
+
+@keyframes sa-chisel-vibrate {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  30% {
+    transform: translate(-1px, 1px);
+  }
+  35% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Spark animations - synced with hammer */
+.sa-spark {
+  animation: sa-spark-flash 1.6s ease-out 2.5s infinite;
+}
+
+.sa-spark-1 { animation-delay: 2.78s; }
+.sa-spark-2 { animation-delay: 2.82s; }
+.sa-spark-3 { animation-delay: 2.76s; }
+.sa-spark-4 { animation-delay: 2.84s; }
+.sa-spark-5 { animation-delay: 2.80s; }
+
+@keyframes sa-spark-flash {
+  0%, 15% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  18% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  35% {
+    opacity: 0;
+    transform: scale(1.5) translate(-3px, -3px);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Dust particles */
+.sa-dust-p {
+  animation: sa-dust-float 1.6s ease-out 2.5s infinite;
+}
+
+.sa-dust-1 { animation-delay: 2.78s; }
+.sa-dust-2 { animation-delay: 2.85s; }
+.sa-dust-3 { animation-delay: 2.75s; }
+.sa-dust-4 { animation-delay: 2.90s; }
+
+@keyframes sa-dust-float {
+  0%, 15% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  20% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.2;
+    transform: translate(-8px, -15px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-12px, -25px);
+  }
+}
+
+/* DOM particle layer */
+.sculpting-particles {
+  position: absolute;
+  top: 50%;
+  left: calc(50% - 20px);
+  width: 0;
+  height: 0;
+}
+
+.sculpting-particle {
+  position: absolute;
+  width: var(--size, 3px);
+  height: var(--size, 3px);
+  background: linear-gradient(135deg, #c9a96e, #8b7355);
+  border-radius: 50%;
+  opacity: 0;
+  animation: sa-particle-fly 1.6s ease-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+@keyframes sa-particle-fly {
+  0%, 15% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  20% {
+    opacity: 0.5;
+  }
+  60% {
+    opacity: 0.15;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--x, -20px), var(--y, -40px));
+  }
+}
+
+/* Statue subtle glow pulse */
+.sa-statue {
+  animation: sa-glow 4s ease-in-out 3s infinite alternate;
+}
+
+@keyframes sa-glow {
+  0% {
+    filter: drop-shadow(0 0 0px transparent);
+  }
+  100% {
+    filter: drop-shadow(0 0 8px rgba(201, 169, 110, 0.15));
+  }
+}
+
+@media (max-width: 768px) {
+  .sculpting-svg {
+    width: min(40vh, 280px);
+    height: min(40vh, 280px);
+    opacity: 0.4;
+  }
+}
