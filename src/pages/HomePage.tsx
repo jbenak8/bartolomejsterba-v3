@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import ParallaxSection from '../components/ParallaxSection'
 import {
   HeadstoneIcon,
   SculptureIcon,
@@ -9,6 +10,15 @@ import {
   HandshakeIcon,
 } from '../components/Icons'
 import './HomePage.css'
+
+const enableParallax = __ENABLE_PARALLAX__
+
+function ImageBreak({ image, children }: { image: string; children: React.ReactNode }) {
+  if (!enableParallax) {
+    return null
+  }
+  return <ParallaxSection image={image} height="50vh">{children}</ParallaxSection>
+}
 
 const services = [
   {
@@ -82,6 +92,11 @@ export default function HomePage() {
         </div>
       </section>
 
+      <ImageBreak image="/images/parallax/photo-1.jpg">
+        <h2>Řemeslná tradice v kameni</h2>
+        <p>Každé dílo je výsledkem pečlivé ruční práce a letitých zkušeností</p>
+      </ImageBreak>
+
       <section className="section about-preview">
         <div className="container about-preview-inner">
           <div className="about-preview-text">
@@ -119,6 +134,11 @@ export default function HomePage() {
         </div>
       </section>
 
+      <ImageBreak image="/images/parallax/photo-4.jpg">
+        <h2>Preciznost v každém detailu</h2>
+        <p>Od prvního návrhu po finální realizaci dbáme na dokonalost provedení</p>
+      </ImageBreak>
+
       <section className="section features-section">
         <div className="container">
           <h2 className="section-title">Proč si vybrat nás</h2>
@@ -134,6 +154,12 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <ImageBreak image="/images/parallax/photo-7.jpg">
+        <h2>Máte zájem o naše služby?</h2>
+        <p>Neváhejte nás kontaktovat. Rádi vám poradíme a připravíme nezávaznou nabídku.</p>
+        <Link to="/o-firme" className="btn btn-primary" style={{ marginTop: '24px' }}>Kontaktujte nás</Link>
+      </ImageBreak>
     </div>
   )
 }

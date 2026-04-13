@@ -292,6 +292,44 @@
   line-height: 1.6;
 }
 
+
+/* Static break (no-parallax variant) */
+.static-break {
+  position: relative;
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-size: cover;
+  background-position: center;
+}
+
+.static-break-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.55);
+}
+
+.static-break-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 48px 24px;
+  max-width: 700px;
+}
+
+.static-break-content h2 {
+  font-size: 2.2rem;
+  color: var(--color-white);
+  margin-bottom: 16px;
+}
+
+.static-break-content p {
+  color: #d4cfc6;
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .services-grid {
