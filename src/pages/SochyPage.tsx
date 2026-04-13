@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { FigureIcon, ColumnIcon, TreeIcon } from '../components/Icons'
+import Lightbox from '../components/Lightbox'
 import './PageStyles.css'
 
 const types = [
@@ -20,6 +22,8 @@ const galleryImages = [
 ]
 
 export default function SochyPage() {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+
   return (
     <div>
       <section className="page-hero">
@@ -77,12 +81,20 @@ export default function SochyPage() {
 
           <h2 style={{ marginTop: '48px' }}>Ukázky prací</h2>
           <div className="gallery-grid">
-            {galleryImages.map((img) => (
-              <div key={img.src} className="gallery-item gallery-item--real">
+            {galleryImages.map((img, i) => (
+              <div key={img.src} className="gallery-item gallery-item--real" onClick={() => setLightboxIndex(i)}>
                 <img src={img.src} alt={img.alt} loading="lazy" />
               </div>
             ))}
           </div>
+
+          {lightboxIndex !== null && (
+            <Lightbox
+              images={galleryImages}
+              currentIndex={lightboxIndex}
+              onClose={() => setLightboxIndex(null)}
+            />
+          )}
         </div>
       </section>
     </div>
