@@ -8,7 +8,9 @@ export default function Footer() {
         <div className="footer-grid">
           <div className="footer-col">
             <div className="footer-logo">
-              <span className="logo-icon">✦</span>
+              <span className="logo-icon">
+                <img src="/soska-logo.png" alt="" className="logo-icon-img" />
+              </span>
               <div>
                 <div className="footer-logo-name">Bartoloměj Štěrba</div>
                 <div className="footer-logo-sub">kamenosochařství</div>

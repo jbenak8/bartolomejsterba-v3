@@ -17,7 +17,9 @@ export default function Header() {
     <header className="header">
       <div className="container header-inner">
         <Link to="/" className="logo">
-          <span className="logo-icon">✦</span>
+          <span className="logo-icon">
+            <img src="/soska-logo.png" alt="" className="logo-icon-img" />
+          </span>
           <div className="logo-text">
             <span className="logo-name">Bartoloměj Štěrba</span>
             <span className="logo-sub">kamenosochařství</span>
