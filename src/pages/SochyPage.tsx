@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { FigureIcon, ColumnIcon, TreeIcon } from '../components/Icons'
 import Lightbox from '../components/Lightbox'
 import { getGalleryImages } from '../utils/gallery'
@@ -46,6 +47,13 @@ export default function SochyPage() {
                 kámen, kov, sklo, hlína nebo různé imitace. My převážně
                 používáme pískovec a dřevo. Můžeme však vytvořit sochy
                 i z opuky nebo velmi vzácného bílého mramoru.
+              </p>
+              <p>
+                Autorkou našich sochařských a řezbářských děl je sochařka
+                a řezbářka{' '}
+                <Link to="/jana-sterbova-rejmanova">Jana Štěrbová Rejmanová</Link>,
+                integrální součást naší firmy a jedna z republikových špiček
+                v oboru.
               </p>
             </div>
             <div>

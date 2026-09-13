@@ -5,6 +5,7 @@ import ScrollToTop from './components/ScrollToTop'
 import HomePage from './pages/HomePage'
 import PomnikyPage from './pages/PomnikyPage'
 import SochyPage from './pages/SochyPage'
+import JanaSterbovaPage from './pages/JanaSterbovaPage'
 import RestaurovamiPage from './pages/RestaurovamiPage'
 import OFirmePage from './pages/OFirmePage'
 
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/pomniky" element={<PomnikyPage />} />
           <Route path="/sochy" element={<SochyPage />} />
+          <Route path="/jana-sterbova-rejmanova" element={<JanaSterbovaPage />} />
           <Route path="/restaurovani" element={<RestaurovamiPage />} />
           <Route path="/o-firme" element={<OFirmePage />} />
         </Routes>

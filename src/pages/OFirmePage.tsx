@@ -87,7 +87,7 @@ export default function OFirmePage() {
                 <div className="contact-detail-icon">📞</div>
                 <div>
                   <h4>Telefon</h4>
-                  <p>+420 604 739 562</p>
+                  <p>Bartoloměj: +420 604 739 562<br/>Jana: +420 604 325 396</p>
                 </div>
               </div>
               <div className="contact-detail">
@@ -109,6 +109,7 @@ export default function OFirmePage() {
                 <div>
                   <h4>Otevírací doba</h4>
                   <p>Po–Pá: 8:00 – 17:00<br />So: po domluvě</p>
+                  <p>Před vaší návštěvou nám prosím zavolejte. Můžeme být totiž v terénu.</p>
                 </div>
               </div>
             </div>

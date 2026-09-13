@@ -7,6 +7,7 @@ const navItems = [
   { to: '/pomniky', label: 'Pomníky' },
   { to: '/sochy', label: 'Sochy' },
   { to: '/restaurovani', label: 'Restaurování' },
+  { to: '/jana-sterbova-rejmanova', label: 'Jana Štěrbová Rejmanová' },
   { to: '/o-firme', label: 'O firmě' },
 ]
 

@@ -29,6 +29,7 @@ export default function Footer() {
               <li><Link to="/pomniky">Pomníky</Link></li>
               <li><Link to="/sochy">Sochy</Link></li>
               <li><Link to="/restaurovani">Restaurování</Link></li>
+              <li><Link to="/jana-sterbova-rejmanova">Jana Štěrbová Rejmanová</Link></li>
               <li><Link to="/o-firme">O firmě</Link></li>
             </ul>
           </div>
@@ -42,7 +43,7 @@ export default function Footer() {
               </li>
               <li>
                 <span className="footer-icon">📞</span>
-                +420 604 739 562
+                Bartoloměj: +420 604 739 562<br/>Jana: +420 604 325 396
               </li>
               <li>
                 <span className="footer-icon">📧</span>

@@ -3,6 +3,7 @@ import {
   HeadstoneIcon,
   SculptureIcon,
   RestorationIcon,
+  FigureIcon,
   StarIcon,
   PaletteIcon,
   MountainIcon,
@@ -22,6 +23,12 @@ const services = [
     title: 'Sochy',
     desc: 'Originální sochařská díla z kamene, pískovce i dřeva. Od monumentálních soch po drobné figurky do interiéru i exteriéru.',
     link: '/sochy',
+  },
+  {
+    icon: <FigureIcon size={56} />,
+    title: 'Sochařka Jana Štěrbová Rejmanová',
+    desc: 'Spoluautorka našich soch a autorka řezbářských děl, integrální součást firmy a jedna z republikových špiček v oboru.',
+    link: '/jana-sterbova-rejmanova',
   },
   {
     icon: <RestorationIcon size={56} />,
@@ -51,6 +58,7 @@ export default function HomePage() {
           <h1 className="hero-title">
             Bartoloměj Štěrba
           </h1>
+          <h2 className="hero-title">Jana Štěrbová Rejmanová</h2>
           <p className="hero-subtitle">
             Tvoříme z kamene díla, která přetrvají staletí. Pomníky, sochy
             a restaurátorské práce s důrazem na kvalitu a řemeslnou preciznost.
@@ -104,7 +112,7 @@ export default function HomePage() {
             <div className="about-visual-card">
               <div className="about-visual-icon">✦</div>
               <div className="about-visual-text">
-                <span className="about-visual-number">20+</span>
+                <span className="about-visual-number">30+</span>
                 <span>let zkušeností</span>
               </div>
             </div>
