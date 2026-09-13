@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { SearchIcon, PaletteIcon, ShieldIcon } from '../components/Icons'
 import Lightbox from '../components/Lightbox'
+import { getGalleryImages } from '../utils/gallery'
 import './PageStyles.css'
 
 const principles = [
@@ -9,17 +10,7 @@ const principles = [
   { icon: <ShieldIcon size={44} />, name: 'Šetrné postupy', desc: 'Používáme speciální technologie pro maximálně šetrný postup' },
 ]
 
-const galleryImages = [
-  { src: 'https://www.bartolomejsterba.cz/galerie/obnova/01.jpg', alt: 'Restaurování sochy' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/obnova/02.jpg', alt: 'Obnova památky' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/obnova/03.jpg', alt: 'Restaurátorské práce' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/obnova/04.jpg', alt: 'Oprava kamenné sochy' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/obnova/05.jpg', alt: 'Restaurování detailu' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/obnova/06.jpg', alt: 'Obnova historické památky' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/obnova/07.jpg', alt: 'Restaurování reliéfu' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/obnova/08.jpg', alt: 'Dokončená restaurace' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/obnova/09.jpg', alt: 'Restaurování kříže' },
-]
+const galleryImages = getGalleryImages('restaurovani')
 
 export default function RestaurovamiPage() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)

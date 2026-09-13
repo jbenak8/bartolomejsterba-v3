@@ -43,7 +43,7 @@ export default function HomePage() {
     <div className="home">
       <section className="hero">
         <video className="hero-video" autoPlay muted loop playsInline>
-          <source src="/images/hero-video.mov" type="video/quicktime" />
+          <source src="/images/hero-video.mp4" type="video/mp4" />
         </video>
         <div className="hero-overlay" />
         <div className="container hero-content">

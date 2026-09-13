@@ -80,7 +80,14 @@ export default function OFirmePage() {
                 <div className="contact-detail-icon">📍</div>
                 <div>
                   <h4>Adresa</h4>
-                  <p>Česká republika</p>
+                  <p>Kozojedy 157<br />331 41 Kozojedy<br />Česká republika</p>
+                </div>
+              </div>
+              <div className="contact-detail">
+                <div className="contact-detail-icon">📞</div>
+                <div>
+                  <h4>Telefon</h4>
+                  <p>+420 604 739 562</p>
                 </div>
               </div>
               <div className="contact-detail">
@@ -144,7 +151,7 @@ export default function OFirmePage() {
         <div className="map-container">
           <iframe
             title="Mapa"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2560000!2d15.4729!3d49.8175!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470b939c0970798b%3A0x400af0f66164090!2zxIxlc2vDoSByZXB1Ymxpa2E!5e0!3m2!1scs!2scz!4v1"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2568.3787893751605!2d13.540541312002516!3d49.92923337137845!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470a59cb7a034573%3A0x76b2e672bfb01499!2zQmFydG9sb23Em2ogxaB0xJtyYmE!5e0!3m2!1scs!2scz!4v1789293596071!5m2!1scs!2scz"
             allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"

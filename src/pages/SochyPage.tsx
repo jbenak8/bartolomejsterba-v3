@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { FigureIcon, ColumnIcon, TreeIcon } from '../components/Icons'
 import Lightbox from '../components/Lightbox'
+import { getGalleryImages } from '../utils/gallery'
 import './PageStyles.css'
 
 const types = [
@@ -9,17 +10,7 @@ const types = [
   { icon: <TreeIcon size={44} />, name: 'Zahradní sochy', desc: 'Dekorativní prvky do zahrad, parků a veřejných prostranství' },
 ]
 
-const galleryImages = [
-  { src: 'https://www.bartolomejsterba.cz/galerie/sochy/2.jpg', alt: 'Dřevěná socha' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/sochy/5.jpg', alt: 'Řezbářské dílo' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/sochy/8.jpg', alt: 'Socha z pískovce' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/sochy/17.jpg', alt: 'Figurální socha' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/sochy/21.jpg', alt: 'Kamenná socha' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/sochy/25.jpg', alt: 'Dřevořezba' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/sochy/30.jpg', alt: 'Betlém' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/sochy/35.jpg', alt: 'Architektonický prvek' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/sochy/40.jpg', alt: 'Lovecký motiv' },
-]
+const galleryImages = getGalleryImages('sochy')
 
 export default function SochyPage() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)

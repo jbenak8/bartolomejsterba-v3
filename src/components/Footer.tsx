@@ -38,7 +38,11 @@ export default function Footer() {
             <ul className="footer-contact">
               <li>
                 <span className="footer-icon">📍</span>
-                Česká republika
+                Kozojedy 157<br />331 41 Kozojedy<br />Česká republika
+              </li>
+              <li>
+                <span className="footer-icon">📞</span>
+                +420 604 739 562
               </li>
               <li>
                 <span className="footer-icon">📧</span>

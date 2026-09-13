@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { RockIcon, MarbleIcon, SandstoneIcon } from '../components/Icons'
 import Lightbox from '../components/Lightbox'
+import { getGalleryImages } from '../utils/gallery'
 import './PageStyles.css'
 
 const materials = [
@@ -9,17 +10,7 @@ const materials = [
   { icon: <SandstoneIcon size={44} />, name: 'Pískovec', desc: 'Tradiční materiál s teplým vzhledem a snadnou opracovatelností' },
 ]
 
-const galleryImages = [
-  { src: 'https://www.bartolomejsterba.cz/galerie/pomniky/1.jpg', alt: 'Pomník z přírodního kamene' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/pomniky/5.jpg', alt: 'Žulový pomník' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/pomniky/6.jpg', alt: 'Mramorový náhrobek' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/pomniky/7.jpg', alt: 'Pomník s křížem' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/pomniky/11.jpg', alt: 'Moderní pomník' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/pomniky/13.jpg', alt: 'Pomník z pískovce' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/pomniky/15.jpg', alt: 'Dvojitý pomník' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/pomniky/18.jpg', alt: 'Pomník se zlatým nápisem' },
-  { src: 'https://www.bartolomejsterba.cz/galerie/pomniky/20.jpg', alt: 'Elegantní náhrobek' },
-]
+const galleryImages = getGalleryImages('pomniky')
 
 export default function PomnikyPage() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
