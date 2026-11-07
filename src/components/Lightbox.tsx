@@ -9,12 +9,20 @@ interface LightboxProps {
 
 export default function Lightbox({ images, currentIndex, onClose }: LightboxProps) {
   const [index, setIndex] = useState(currentIndex)
+  const [prevCurrentIndex, setPrevCurrentIndex] = useState(currentIndex)
+
+  if (prevCurrentIndex !== currentIndex) {
+    setPrevCurrentIndex(currentIndex)
+    setIndex(currentIndex)
+  }
 
   const goPrev = useCallback(() => {
+    if (images.length === 0) return
     setIndex((i) => (i > 0 ? i - 1 : images.length - 1))
   }, [images.length])
 
   const goNext = useCallback(() => {
+    if (images.length === 0) return
     setIndex((i) => (i < images.length - 1 ? i + 1 : 0))
   }, [images.length])
 
@@ -32,9 +40,10 @@ export default function Lightbox({ images, currentIndex, onClose }: LightboxProp
     }
   }, [onClose, goPrev, goNext])
 
-  useEffect(() => {
-    setIndex(currentIndex)
-  }, [currentIndex])
+  if (!images.length) return null
+
+  const safeIndex = Math.min(Math.max(0, index), images.length - 1)
+  const currentImage = images[safeIndex]
 
   return (
     <div className="lightbox-overlay" onClick={onClose}>
@@ -45,16 +54,18 @@ export default function Lightbox({ images, currentIndex, onClose }: LightboxProp
         <button className="lightbox-arrow lightbox-arrow--left" onClick={goPrev} aria-label="Předchozí">
           ‹
         </button>
-        <img
-          src={images[index].src}
-          alt={images[index].alt}
-          className="lightbox-image"
-        />
+        {currentImage && (
+          <img
+            src={currentImage.src}
+            alt={currentImage.alt}
+            className="lightbox-image"
+          />
+        )}
         <button className="lightbox-arrow lightbox-arrow--right" onClick={goNext} aria-label="Další">
           ›
         </button>
         <div className="lightbox-counter">
-          {index + 1} / {images.length}
+          {safeIndex + 1} / {images.length}
         </div>
       </div>
     </div>

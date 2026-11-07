@@ -11,6 +11,7 @@ export default function SculptingAnimation() {
     const particleLayer = container.querySelector('.sculpting-particles')
     if (!particleLayer) return
 
+    particleLayer.innerHTML = ''
     for (let i = 0; i < 12; i++) {
       const p = document.createElement('div')
       p.className = 'sculpting-particle'
@@ -19,6 +20,10 @@ export default function SculptingAnimation() {
       p.style.setProperty('--y', `${-40 - Math.random() * 50}px`)
       p.style.setProperty('--size', `${2 + Math.random() * 3}px`)
       particleLayer.appendChild(p)
+    }
+
+    return () => {
+      particleLayer.innerHTML = ''
     }
   }, [])
 
