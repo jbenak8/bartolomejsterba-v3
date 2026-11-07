@@ -108,7 +108,7 @@ export default function OFirmePage() {
                 <div className="contact-detail-icon">🕐</div>
                 <div>
                   <h4>Otevírací doba</h4>
-                  <p>Po–Pá: 8:00 – 17:00<br />So: po domluvě</p>
+                  <p>Po předchozí, nejlépe telefonické, domluvě</p>
                   <p>Před vaší návštěvou nám prosím zavolejte. Můžeme být totiž v terénu.</p>
                 </div>
               </div>

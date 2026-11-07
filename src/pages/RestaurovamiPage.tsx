@@ -22,7 +22,7 @@ export default function RestaurovamiPage() {
           <h1>Restaurátorské práce</h1>
           <hr className="section-divider" />
           <p>
-            Odborná restaurace historických památek, soch a uměleckých děl
+            Odborné restaurování historických památek, soch a uměleckých děl
             s maximální úctou k originálu a jeho autenticitě.
           </p>
         </div>
