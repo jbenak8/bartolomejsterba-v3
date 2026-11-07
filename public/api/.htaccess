@@ -1,0 +1,4 @@
+# Konfigurace s tajným klíčem nesmí být dostupná z webu
+<FilesMatch "^config(\.example)?\.php$">
+  Require all denied
+</FilesMatch>

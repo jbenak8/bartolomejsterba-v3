@@ -1,13 +1,52 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import Turnstile from '../components/Turnstile'
+import { sendContact, TURNSTILE_SITE_KEY } from '../utils/contact'
 import './PageStyles.css'
 
 export default function OFirmePage() {
   const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+  const [resetSignal, setResetSignal] = useState(0)
+  const startedAt = useRef(0)
 
-  const handleSubmit = (e: FormEvent) => {
+  useEffect(() => {
+    startedAt.current = Date.now()
+  }, [])
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setSent(true)
-    setTimeout(() => setSent(false), 4000)
+    if (sending) return
+
+    if (!token) {
+      setError('Potvrďte prosím, že nejste robot.')
+      return
+    }
+
+    const form = e.currentTarget
+    const data = new FormData(form)
+    const field = (key: string) => String(data.get(key) ?? '')
+
+    setSending(true)
+    setError(null)
+    try {
+      await sendContact({
+        name: field('name'),
+        email: field('email'),
+        phone: field('phone'),
+        message: field('message'),
+        website: field('website'),
+        elapsed: Date.now() - startedAt.current,
+        turnstileToken: token,
+      })
+      setSent(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Zprávu se nepodařilo odeslat.')
+      setResetSignal((n) => n + 1)
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -124,22 +163,41 @@ export default function OFirmePage() {
                 <form onSubmit={handleSubmit}>
                   <div className="form-group">
                     <label htmlFor="name">Jméno a příjmení</label>
-                    <input type="text" id="name" name="name" required />
+                    <input type="text" id="name" name="name" maxLength={100} required />
                   </div>
                   <div className="form-group">
                     <label htmlFor="email">E-mail</label>
-                    <input type="email" id="email" name="email" required />
+                    <input type="email" id="email" name="email" maxLength={150} required />
                   </div>
                   <div className="form-group">
                     <label htmlFor="phone">Telefon</label>
-                    <input type="tel" id="phone" name="phone" />
+                    <input type="tel" id="phone" name="phone" maxLength={30} />
                   </div>
                   <div className="form-group">
                     <label htmlFor="message">Zpráva</label>
-                    <textarea id="message" name="message" required />
+                    <textarea id="message" name="message" minLength={5} maxLength={5000} required />
                   </div>
-                  <button type="submit" className="form-submit">
-                    Odeslat zprávu
+
+                  {/* Honeypot – pro lidi neviditelné, roboti ho vyplní */}
+                  <div className="form-hp" aria-hidden="true">
+                    <label htmlFor="website">Web</label>
+                    <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
+                  </div>
+
+                  {TURNSTILE_SITE_KEY && (
+                    <Turnstile
+                      siteKey={TURNSTILE_SITE_KEY}
+                      onToken={setToken}
+                      resetSignal={resetSignal}
+                    />
+                  )}
+
+                  {error && (
+                    <p className="form-error" role="alert">{error}</p>
+                  )}
+
+                  <button type="submit" className="form-submit" disabled={sending}>
+                    {sending ? 'Odesílám…' : 'Odeslat zprávu'}
                   </button>
                 </form>
               )}

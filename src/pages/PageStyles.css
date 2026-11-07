@@ -284,6 +284,33 @@
   box-shadow: 0 8px 24px rgba(201, 169, 110, 0.3);
 }
 
+.form-submit:disabled {
+  opacity: 0.7;
+  cursor: wait;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Honeypot – mimo obrazovku, ne display:none (některé boty ho tak přeskočí) */
+.form-hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.turnstile-box {
+  margin-bottom: 20px;
+  min-height: 65px;
+}
+
+.form-error {
+  margin: 0 0 16px;
+  color: #b3261e;
+  font-size: 0.9rem;
+}
+
 /* Map */
 .map-section {
   padding: 0;

@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Tajná konfigurace kontaktního formuláře (PHP)
+public/api/config.php
+.env
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
