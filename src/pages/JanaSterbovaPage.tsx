@@ -64,9 +64,7 @@ export default function JanaSterbovaPage() {
               )}
               <div className="highlight-box">
                 <p>
-                  „Socha musí žít. Ať už v kameni nebo ve dřevě, snažím se, aby
-                  každé dílo mělo svůj výraz a oslovilo diváka i po desítkách
-                  let."
+                  „Pokud pohled na umělěcké dílo v člověku vzbuzuje pocit krásy a lásky, pak je to dobré dílo. A o to se snažím."
                 </p>
               </div>
             </div>

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import {
   HeadstoneIcon,
@@ -45,11 +46,30 @@ const features = [
   { icon: <HandshakeIcon size={44} />, title: 'Osobní jednání', desc: 'Vždy se domluvíme na nejlepším řešení' },
 ]
 
+const HERO_VIDEO_PLAYBACK_RATE = 0.7
+
 export default function HomePage() {
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    const applyRate = () => {
+      video.playbackRate = HERO_VIDEO_PLAYBACK_RATE
+    }
+    applyRate()
+    video.addEventListener('loadedmetadata', applyRate)
+    video.addEventListener('play', applyRate)
+    return () => {
+      video.removeEventListener('loadedmetadata', applyRate)
+      video.removeEventListener('play', applyRate)
+    }
+  }, [])
+
   return (
     <div className="home">
       <section className="hero">
-        <video className="hero-video" autoPlay muted loop playsInline>
+        <video ref={videoRef} className="hero-video" autoPlay muted loop playsInline>
           <source src="/images/hero-video.mp4" type="video/mp4" />
         </video>
         <div className="hero-overlay" />
