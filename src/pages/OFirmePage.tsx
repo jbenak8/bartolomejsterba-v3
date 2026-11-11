@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState, type SubmitEvent } from 'react'
 import Turnstile from '../components/Turnstile'
-import ReCaptcha from '../components/ReCaptcha'
-import { CAPTCHA_PROVIDER, CAPTCHA_SITE_KEY, sendContact } from '../utils/contact'
+import {
+  CAPTCHA_PROVIDER,
+  CAPTCHA_SITE_KEY,
+  RECAPTCHA_SITE_KEY,
+  sendContact,
+} from '../utils/contact'
+import { executeRecaptcha, loadRecaptcha, RECAPTCHA_ACTION } from '../utils/recaptcha'
 import './PageStyles.css'
 
 export default function OFirmePage() {
@@ -16,11 +21,17 @@ export default function OFirmePage() {
     startedAt.current = Date.now()
   }, [])
 
+  useEffect(() => {
+    if (CAPTCHA_PROVIDER === 'recaptcha') {
+      void loadRecaptcha(RECAPTCHA_SITE_KEY).catch(() => undefined)
+    }
+  }, [])
+
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (sending) return
 
-    if (CAPTCHA_PROVIDER !== 'none' && !token) {
+    if (CAPTCHA_PROVIDER === 'turnstile' && !token) {
       setError('Potvrďte prosím, že nejste robot.')
       return
     }
@@ -35,6 +46,15 @@ export default function OFirmePage() {
     setSending(true)
     setError(null)
     try {
+      let captchaToken = token ?? ''
+      if (CAPTCHA_PROVIDER === 'recaptcha') {
+        const recaptchaToken = await executeRecaptcha(RECAPTCHA_SITE_KEY, RECAPTCHA_ACTION)
+        if (!recaptchaToken) {
+          throw new Error('Ověření proti robotům se nezdařilo. Zkuste to prosím znovu.')
+        }
+        captchaToken = recaptchaToken
+      }
+
       await sendContact({
         name: field('name'),
         email: field('email'),
@@ -42,9 +62,9 @@ export default function OFirmePage() {
         message: field('message'),
         website: field('website'),
         elapsed: Date.now() - startedAt.current,
-        captchaToken: token ?? '',
+        captchaToken,
         captchaProvider: CAPTCHA_PROVIDER,
-        turnstileToken: token ?? '',
+        turnstileToken: captchaToken,
       })
       setSent(true)
     } catch (err) {
@@ -192,13 +212,6 @@ export default function OFirmePage() {
 
                   {CAPTCHA_SITE_KEY && CAPTCHA_PROVIDER === 'turnstile' && (
                     <Turnstile
-                      siteKey={CAPTCHA_SITE_KEY}
-                      onToken={setToken}
-                      resetSignal={resetSignal}
-                    />
-                  )}
-                  {CAPTCHA_SITE_KEY && CAPTCHA_PROVIDER === 'recaptcha' && (
-                    <ReCaptcha
                       siteKey={CAPTCHA_SITE_KEY}
                       onToken={setToken}
                       resetSignal={resetSignal}

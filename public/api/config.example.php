@@ -11,9 +11,16 @@ return [
     // Pro vývoj lze použít testovací klíč: 1x0000000000000000000000000000000AA (vždy projde)
     'turnstile_secret' => '',
 
-    // Tajný klíč Google reCAPTCHA v2. Testovací klíč (vždy projde):
-    // 6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
+    // Tajný klíč Google reCAPTCHA v3 (Score based).
     'recaptcha_secret' => '',
+    // Minimální skóre reCAPTCHA v3 (rozsah Google: 0.0–1.0; vyšší = pravděpodobnější člověk).
+    'recaptcha_min_score' => 0.5,
+
+    // Při true vrací chybové odpovědi bezpečné diagnostické údaje; po vyřešení problému vypněte.
+    'debug' => false,
+
+    // Volitelná cesta k CA bundle; pokud není nastavena, automaticky se použije api/cacert.pem, je-li přítomen.
+    'ca_bundle' => __DIR__ . '/cacert.pem',
 
     // Příjemce zpráv
     'mail_to' => 'info@bartolomejsterba.cz',

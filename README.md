@@ -74,11 +74,17 @@ export default defineConfig([
 
 ## Antispam kontaktního formuláře
 
-Formulář podporuje Cloudflare Turnstile (výchozí) a Google reCAPTCHA v2 checkbox.
+Formulář podporuje Cloudflare Turnstile (výchozí) a Google reCAPTCHA v3 (Score based).
 Pro přepnutí nastavte stejný provider na frontendu v `VITE_CAPTCHA_PROVIDER`
 (`turnstile`, `recaptcha` nebo `none`) a na serveru v `captcha_provider`
 v `public/api/config.php`. Pro reCAPTCHA vyplňte `VITE_RECAPTCHA_SITE_KEY` a
-serverový `recaptcha_secret`; pro Turnstile použijte `VITE_TURNSTILE_SITE_KEY`
-a `turnstile_secret`. Testovací Google klíče jsou uvedené v `.env.example` a
-`public/api/config.example.php`. Hodnota `none` CAPTCHA vypne, proto ji používejte
-jen pokud je to záměrné.
+serverový `recaptcha_secret`; klíč musí být vytvořen jako reCAPTCHA v3 a musí
+obsahovat domény webu. Skóre se ověřuje proti `recaptcha_min_score` (výchozí 0.5).
+Google badge musí zůstat na webu viditelný. Pro Turnstile použijte
+`VITE_TURNSTILE_SITE_KEY` a `turnstile_secret`. Hodnota `none` CAPTCHA vypne,
+proto ji používejte jen pokud je to záměrné.
+
+Pro diagnostiku nastavte v serverovém `public/api/config.php` hodnotu `'debug' => true`;
+selhání CAPTCHA se zapíše do PHP error logu a bezpečné detaily se vrátí u chyb `captcha_failed` a `mail_failed`. Po diagnostice režim vraťte na `false`.
+
+Pokud diagnostika ukazuje `curl_errno` 60 nebo chybu ověření certifikátu, nahrajte oficiální Mozilla CA bundle jako `public/api/cacert.pem` na server do složky `api/`. Endpoint jej automaticky použije pro cURL i streamové HTTPS požadavky; případně lze jinou cestu nastavit v `config.php` pomocí `ca_bundle`. Ověřování TLS zůstává zapnuté.

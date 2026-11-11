@@ -312,8 +312,7 @@
   overflow: hidden;
 }
 
-.turnstile-box,
-.recaptcha-box {
+.turnstile-box {
   margin-bottom: 20px;
   min-height: 78px;
 }

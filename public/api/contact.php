@@ -8,12 +8,13 @@ declare(strict_types=1);
  *  1. Kontrola metody, Content-Type a Origin/Referer (CSRF / cizí weby)
  *  2. Honeypot pole (roboti ho vyplní, lidé ho nevidí)
  *  3. Časová kontrola (formulář odeslaný dříve než za pár sekund je robot)
- *  4. CAPTCHA (Cloudflare Turnstile nebo Google reCAPTCHA) – ověření tokenu na serveru
+ *  4. CAPTCHA (Cloudflare Turnstile nebo Google reCAPTCHA v3) – ověření tokenu na serveru
  *  5. Rate limit podle IP
  *  6. Validace vstupu, limit odkazů, ochrana proti header injection
  */
 
 $config = require_once __DIR__ . '/config.php';
+$diag = [];
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -22,13 +23,22 @@ header('X-Content-Type-Options: nosniff');
 function respond(int $status, array $data): never
 {
     http_response_code($status);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
     exit;
 }
 
 function fail(int $status, string $code, string $message): never
 {
-    respond($status, ['ok' => false, 'error' => $code, 'message' => $message]);
+    $response = ['ok' => false, 'error' => $code, 'message' => $message];
+    if (($GLOBALS['config']['debug'] ?? false) === true) {
+        $response['debug'] = $GLOBALS['diag'];
+    }
+    respond($status, $response);
+}
+
+function diag(string $key, mixed $value): void
+{
+    $GLOBALS['diag'][$key] = $value;
 }
 
 function clientIp(): string
@@ -81,67 +91,213 @@ function rateLimited(string $ip, int $max, int $windowSeconds): bool
     return $limited;
 }
 
+function resolveCaBundle(): string
+{
+    $configuredCaBundle = $GLOBALS['config']['ca_bundle'] ?? null;
+    if (is_string($configuredCaBundle) && $configuredCaBundle !== '' && is_file($configuredCaBundle)) {
+        return $configuredCaBundle;
+    }
+
+    $defaultCaBundle = __DIR__ . '/cacert.pem';
+    if (is_file($defaultCaBundle)) {
+        return $defaultCaBundle;
+    }
+
+    return '';
+}
+
+function requestViaCurl(string $url, string $payload, string $caBundle, bool &$requestStarted): ?string
+{
+    $ch = curl_init($url);
+    if ($ch === false) {
+        diag('transport_error', 'curl_init failed');
+        return null;
+    }
+    $requestStarted = true;
+
+    $curlOptions = [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $payload,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 8,
+    ];
+    if ($caBundle !== '') {
+        $curlOptions[CURLOPT_CAINFO] = $caBundle;
+    }
+    curl_setopt_array($ch, $curlOptions);
+    $result = curl_exec($ch);
+    $httpStatus = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    $curlErrno = curl_errno($ch);
+    curl_close($ch);
+    diag('http_status', $httpStatus);
+    if ($curlErrno !== 0) {
+        diag('curl_errno', $curlErrno);
+        diag('curl_error', $curlError);
+    }
+
+    return is_string($result) ? $result : null;
+}
+
+function requestViaStream(string $url, string $payload, string $caBundle): ?string
+{
+    error_clear_last();
+    $contextOptions = [
+        'http' => [
+            'method' => 'POST',
+            'header' => 'Content-Type: application/x-www-form-urlencoded',
+            'content' => $payload,
+            'timeout' => 8,
+        ],
+    ];
+    if ($caBundle !== '') {
+        $contextOptions['ssl'] = ['cafile' => $caBundle];
+    }
+    $result = @file_get_contents($url, false, stream_context_create($contextOptions));
+    $httpStatus = 0;
+    if (isset($http_response_header[0]) && preg_match('/\s(\d{3})\s/', $http_response_header[0], $matches)) {
+        $httpStatus = (int)$matches[1];
+    }
+    diag('http_status', $httpStatus);
+    if (!is_string($result)) {
+        $lastError = error_get_last();
+        if ($lastError !== null) {
+            diag('transport_error', $lastError['message'] ?? 'Request failed');
+        }
+    }
+
+    return is_string($result) ? $result : null;
+}
+
+function decodeProviderResponse(?string $result, bool $requestStarted): ?array
+{
+    if (!$requestStarted) {
+        return null;
+    }
+    if (!is_string($result)) {
+        diag('response', null);
+        return null;
+    }
+    diag('response', substr($result, 0, 1000));
+    $data = json_decode($result, true);
+    if (!is_array($data)) {
+        diag('json_error', json_last_error_msg());
+        $data = null;
+    }
+
+    return $data;
+}
+
 function postForm(string $url, array $fields): ?array
 {
     $payload = http_build_query($fields);
+    $caBundle = resolveCaBundle();
+    diag('ca_bundle', $caBundle !== '' ? basename($caBundle) : 'system');
+    $requestStarted = !function_exists('curl_init');
 
     if (function_exists('curl_init')) {
-        $ch = curl_init($url);
-        if ($ch === false) {
-            return null;
-        }
-        curl_setopt_array($ch, [
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $payload,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 8,
-        ]);
-        $result = curl_exec($ch);
-        curl_close($ch);
+        diag('transport', 'curl');
+        $result = requestViaCurl($url, $payload, $caBundle, $requestStarted);
     } else {
-        $result = @file_get_contents($url, false, stream_context_create([
-            'http' => [
-                'method' => 'POST',
-                'header' => 'Content-Type: application/x-www-form-urlencoded',
-                'content' => $payload,
-                'timeout' => 8,
-            ],
-        ]));
+        diag('transport', 'file_get_contents');
+        $result = requestViaStream($url, $payload, $caBundle);
     }
 
-    if (!is_string($result)) {
-        return null;
+    return decodeProviderResponse($result, $requestStarted);
+}
+
+function checkTokenAndSecret(string $secret, string $token, int $maxLength): ?string
+{
+    $failure = null;
+    if ($token === '') {
+        $failure = 'empty_token';
+    } elseif (strlen($token) > $maxLength) {
+        $failure = 'token_too_long';
+    } elseif ($secret === '') {
+        $failure = 'missing_secret';
     }
-    $data = json_decode($result, true);
-    return is_array($data) ? $data : null;
+
+    return $failure;
 }
 
 function verifyTurnstile(string $secret, string $token, string $ip): bool
 {
-    if ($token === '' || strlen($token) > 2048) {
-        return false;
+    $failure = checkTokenAndSecret($secret, $token, 2048);
+    $data = null;
+    if ($failure === null) {
+        $data = postForm('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+            'secret' => $secret,
+            'response' => $token,
+            'remoteip' => $ip,
+        ]);
+    }
+    if (is_array($data)) {
+        diag('captcha_hostname', $data['hostname'] ?? null);
+    }
+    if ($failure === null && (!is_array($data) || ($data['success'] ?? false) !== true)) {
+        $failure = is_array($data) ? 'provider_rejected' : 'invalid_provider_response';
+    }
+    if ($failure !== null) {
+        diag('verification_failure', $failure);
+        if ($failure === 'provider_rejected') {
+            diag('provider_error_codes', $data['error-codes'] ?? []);
+        }
     }
 
-    $data = postForm('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
-        'secret' => $secret,
-        'response' => $token,
-        'remoteip' => $ip,
-    ]);
-    return is_array($data) && ($data['success'] ?? false) === true;
+    return $failure === null;
 }
 
-function verifyRecaptcha(string $secret, string $token, string $ip): bool
+function evaluateRecaptchaResponse(array $data, string $action, float $minScore): ?string
 {
-    if ($token === '' || strlen($token) > 4096) {
-        return false;
+    $failure = null;
+    if (($data['success'] ?? false) !== true) {
+        $failure = 'provider_rejected';
+    } elseif (($data['action'] ?? '') !== $action) {
+        $failure = 'action_mismatch';
+    } elseif (!isset($data['score']) || !is_numeric($data['score'])) {
+        $failure = 'missing_score';
+    } else {
+        $score = (float)$data['score'];
+        diag('captcha_score', $score);
+        if ($score < $minScore) {
+            $failure = 'score_below_minimum';
+        }
     }
 
-    $data = postForm('https://www.google.com/recaptcha/api/siteverify', [
-        'secret' => $secret,
-        'response' => $token,
-        'remoteip' => $ip,
-    ]);
-    return is_array($data) && ($data['success'] ?? false) === true;
+    if ($failure !== null) {
+        diag('verification_failure', $failure);
+        if ($failure === 'provider_rejected') {
+            diag('provider_error_codes', $data['error-codes'] ?? []);
+        } elseif ($failure === 'action_mismatch') {
+            diag('received_action', $data['action'] ?? null);
+        }
+    }
+
+    return $failure;
+}
+
+function verifyRecaptcha(string $secret, string $token, string $ip, string $action, float $minScore): bool
+{
+    $failure = checkTokenAndSecret($secret, $token, 4096);
+    $data = null;
+    if ($failure === null) {
+        $data = postForm('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => $secret,
+            'response' => $token,
+            'remoteip' => $ip,
+        ]);
+        if (is_array($data)) {
+            diag('captcha_hostname', $data['hostname'] ?? null);
+            $failure = evaluateRecaptchaResponse($data, $action, $minScore);
+        } else {
+            $failure = 'invalid_provider_response';
+            diag('verification_failure', $failure);
+        }
+    } else {
+        diag('verification_failure', $failure);
+    }
+
+    return $failure === null;
 }
 
 // 1) Metoda a původ požadavku
@@ -196,14 +352,27 @@ $captchaProvider = $config['captcha_provider'] ?? 'turnstile';
 if (!in_array($captchaProvider, ['turnstile', 'recaptcha', 'none'], true)) {
     $captchaProvider = 'turnstile';
 }
+diag('captcha_provider', $captchaProvider);
 $tokenValue = $input['captchaToken'] ?? $input['turnstileToken'] ?? '';
 $token = is_string($tokenValue) ? $tokenValue : '';
+diag('captcha_token_length', strlen($token));
+$minScore = (float)($config['recaptcha_min_score'] ?? 0.5);
+if ($captchaProvider === 'recaptcha') {
+    diag('captcha_min_score', $minScore);
+}
 $captchaValid = match ($captchaProvider) {
-    'recaptcha' => verifyRecaptcha((string)($config['recaptcha_secret'] ?? ''), $token, $ip),
+    'recaptcha' => verifyRecaptcha(
+        (string)($config['recaptcha_secret'] ?? ''),
+        $token,
+        $ip,
+        'contact',
+        $minScore
+    ),
     'none' => true,
     default => verifyTurnstile((string)($config['turnstile_secret'] ?? ''), $token, $ip),
 };
 if (!$captchaValid) {
+    error_log('contact.php captcha_failed: ' . json_encode($GLOBALS['diag'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE));
     fail(400, 'captcha_failed', 'Ověření proti robotům se nezdařilo. Zkuste to prosím znovu.');
 }
 
@@ -244,7 +413,8 @@ $headers = [
 
 $sent = mail((string)$config['mail_to'], $subject, $body, implode("\r\n", $headers));
 if (!$sent) {
-    error_log('contact.php: mail() selhalo');
+    diag('mail_error', error_get_last());
+    error_log('contact.php mail_failed: ' . json_encode($GLOBALS['diag'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE));
     fail(500, 'mail_failed', 'Zprávu se nepodařilo odeslat. Zavolejte nám prosím nebo napište na e-mail.');
 }
 
