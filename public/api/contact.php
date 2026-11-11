@@ -8,12 +8,12 @@ declare(strict_types=1);
  *  1. Kontrola metody, Content-Type a Origin/Referer (CSRF / cizí weby)
  *  2. Honeypot pole (roboti ho vyplní, lidé ho nevidí)
  *  3. Časová kontrola (formulář odeslaný dříve než za pár sekund je robot)
- *  4. Cloudflare Turnstile – ověření tokenu na serveru
+ *  4. CAPTCHA (Cloudflare Turnstile nebo Google reCAPTCHA) – ověření tokenu na serveru
  *  5. Rate limit podle IP
  *  6. Validace vstupu, limit odkazů, ochrana proti header injection
  */
 
-$config = require __DIR__ . '/config.php';
+$config = require_once __DIR__ . '/config.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -81,21 +81,15 @@ function rateLimited(string $ip, int $max, int $windowSeconds): bool
     return $limited;
 }
 
-function verifyTurnstile(string $secret, string $token, string $ip): bool
+function postForm(string $url, array $fields): ?array
 {
-    if ($token === '' || strlen($token) > 2048) {
-        return false;
-    }
-
-    $payload = http_build_query([
-        'secret' => $secret,
-        'response' => $token,
-        'remoteip' => $ip,
-    ]);
-    $url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+    $payload = http_build_query($fields);
 
     if (function_exists('curl_init')) {
         $ch = curl_init($url);
+        if ($ch === false) {
+            return null;
+        }
         curl_setopt_array($ch, [
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $payload,
@@ -116,9 +110,37 @@ function verifyTurnstile(string $secret, string $token, string $ip): bool
     }
 
     if (!is_string($result)) {
-        return false;
+        return null;
     }
     $data = json_decode($result, true);
+    return is_array($data) ? $data : null;
+}
+
+function verifyTurnstile(string $secret, string $token, string $ip): bool
+{
+    if ($token === '' || strlen($token) > 2048) {
+        return false;
+    }
+
+    $data = postForm('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+        'secret' => $secret,
+        'response' => $token,
+        'remoteip' => $ip,
+    ]);
+    return is_array($data) && ($data['success'] ?? false) === true;
+}
+
+function verifyRecaptcha(string $secret, string $token, string $ip): bool
+{
+    if ($token === '' || strlen($token) > 4096) {
+        return false;
+    }
+
+    $data = postForm('https://www.google.com/recaptcha/api/siteverify', [
+        'secret' => $secret,
+        'response' => $token,
+        'remoteip' => $ip,
+    ]);
     return is_array($data) && ($data['success'] ?? false) === true;
 }
 
@@ -132,9 +154,10 @@ $allowedOrigins = $config['allowed_origins'] ?? [];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if ($origin === '' && !empty($_SERVER['HTTP_REFERER'])) {
     $parts = parse_url($_SERVER['HTTP_REFERER']);
-    $origin = isset($parts['scheme'], $parts['host'])
-        ? $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '')
-        : '';
+    if (isset($parts['scheme'], $parts['host'])) {
+        $portSuffix = isset($parts['port']) ? ':' . $parts['port'] : '';
+        $origin = $parts['scheme'] . '://' . $parts['host'] . $portSuffix;
+    }
 }
 if ($allowedOrigins && !in_array($origin, $allowedOrigins, true)) {
     fail(403, 'forbidden_origin', 'Požadavek byl zamítnut.');
@@ -168,9 +191,19 @@ if (rateLimited($ip, (int)($config['rate_limit_max'] ?? 3), (int)($config['rate_
     fail(429, 'rate_limited', 'Odesíláte příliš mnoho zpráv. Zkuste to prosím později.');
 }
 
-// 4) Turnstile
-$token = is_string($input['turnstileToken'] ?? null) ? $input['turnstileToken'] : '';
-if (!verifyTurnstile((string)$config['turnstile_secret'], $token, $ip)) {
+// 4) CAPTCHA provider je určen výhradně konfigurací serveru.
+$captchaProvider = $config['captcha_provider'] ?? 'turnstile';
+if (!in_array($captchaProvider, ['turnstile', 'recaptcha', 'none'], true)) {
+    $captchaProvider = 'turnstile';
+}
+$tokenValue = $input['captchaToken'] ?? $input['turnstileToken'] ?? '';
+$token = is_string($tokenValue) ? $tokenValue : '';
+$captchaValid = match ($captchaProvider) {
+    'recaptcha' => verifyRecaptcha((string)($config['recaptcha_secret'] ?? ''), $token, $ip),
+    'none' => true,
+    default => verifyTurnstile((string)($config['turnstile_secret'] ?? ''), $token, $ip),
+};
+if (!$captchaValid) {
     fail(400, 'captcha_failed', 'Ověření proti robotům se nezdařilo. Zkuste to prosím znovu.');
 }
 

@@ -71,3 +71,14 @@ export default defineConfig([
   },
 ])
 ```
+
+## Antispam kontaktního formuláře
+
+Formulář podporuje Cloudflare Turnstile (výchozí) a Google reCAPTCHA v2 checkbox.
+Pro přepnutí nastavte stejný provider na frontendu v `VITE_CAPTCHA_PROVIDER`
+(`turnstile`, `recaptcha` nebo `none`) a na serveru v `captcha_provider`
+v `public/api/config.php`. Pro reCAPTCHA vyplňte `VITE_RECAPTCHA_SITE_KEY` a
+serverový `recaptcha_secret`; pro Turnstile použijte `VITE_TURNSTILE_SITE_KEY`
+a `turnstile_secret`. Testovací Google klíče jsou uvedené v `.env.example` a
+`public/api/config.example.php`. Hodnota `none` CAPTCHA vypne, proto ji používejte
+jen pokud je to záměrné.

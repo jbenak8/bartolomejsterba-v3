@@ -3,9 +3,17 @@
 // Soubor config.php NEPATŘÍ do gitu – obsahuje tajný klíč.
 
 return [
+    // Provider ochrany formuláře: 'turnstile', 'recaptcha' nebo 'none'.
+    // Musí odpovídat VITE_CAPTCHA_PROVIDER ve frontendové konfiguraci.
+    'captcha_provider' => 'turnstile',
+
     // Tajný klíč z Cloudflare Turnstile (Dashboard -> Turnstile -> widget -> Secret key).
     // Pro vývoj lze použít testovací klíč: 1x0000000000000000000000000000000AA (vždy projde)
     'turnstile_secret' => '',
+
+    // Tajný klíč Google reCAPTCHA v2. Testovací klíč (vždy projde):
+    // 6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
+    'recaptcha_secret' => '',
 
     // Příjemce zpráv
     'mail_to' => 'info@bartolomejsterba.cz',

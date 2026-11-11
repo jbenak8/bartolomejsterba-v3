@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type SubmitEvent } from 'react'
 import Turnstile from '../components/Turnstile'
-import { sendContact, TURNSTILE_SITE_KEY } from '../utils/contact'
+import ReCaptcha from '../components/ReCaptcha'
+import { CAPTCHA_PROVIDER, CAPTCHA_SITE_KEY, sendContact } from '../utils/contact'
 import './PageStyles.css'
 
 export default function OFirmePage() {
@@ -15,18 +16,21 @@ export default function OFirmePage() {
     startedAt.current = Date.now()
   }, [])
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (sending) return
 
-    if (!token) {
+    if (CAPTCHA_PROVIDER !== 'none' && !token) {
       setError('Potvrďte prosím, že nejste robot.')
       return
     }
 
     const form = e.currentTarget
     const data = new FormData(form)
-    const field = (key: string) => String(data.get(key) ?? '')
+    const field = (key: string) => {
+      const value = data.get(key)
+      return typeof value === 'string' ? value : ''
+    }
 
     setSending(true)
     setError(null)
@@ -38,7 +42,9 @@ export default function OFirmePage() {
         message: field('message'),
         website: field('website'),
         elapsed: Date.now() - startedAt.current,
-        turnstileToken: token,
+        captchaToken: token ?? '',
+        captchaProvider: CAPTCHA_PROVIDER,
+        turnstileToken: token ?? '',
       })
       setSent(true)
     } catch (err) {
@@ -184,9 +190,16 @@ export default function OFirmePage() {
                     <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
                   </div>
 
-                  {TURNSTILE_SITE_KEY && (
+                  {CAPTCHA_SITE_KEY && CAPTCHA_PROVIDER === 'turnstile' && (
                     <Turnstile
-                      siteKey={TURNSTILE_SITE_KEY}
+                      siteKey={CAPTCHA_SITE_KEY}
+                      onToken={setToken}
+                      resetSignal={resetSignal}
+                    />
+                  )}
+                  {CAPTCHA_SITE_KEY && CAPTCHA_PROVIDER === 'recaptcha' && (
+                    <ReCaptcha
+                      siteKey={CAPTCHA_SITE_KEY}
                       onToken={setToken}
                       resetSignal={resetSignal}
                     />
